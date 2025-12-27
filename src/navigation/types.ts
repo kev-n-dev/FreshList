@@ -5,6 +5,7 @@ export type RootStackParamList = {
   EditList: {listId: string};
   AddItem: {listId: string};
   EditItem: {itemId: string; listId: string};
+  Auth: undefined;
 };
 
 export type TabParamList = {

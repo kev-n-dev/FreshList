@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {View, Text, FlatList, TouchableOpacity, StyleSheet} from 'react-native';
 import {useNavigation, useRoute, RouteProp} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
@@ -7,6 +7,8 @@ import {useAppSelector, useAppDispatch} from '@hooks/redux';
 import {toggleItem, deleteItem} from '@store/slices/itemsSlice';
 import {RootStackParamList} from '@navigation/types';
 import {ShoppingItem} from '@types/index';
+import {ShareListModal} from '@features/collaboration/components/ShareListModal';
+import {useCollaboration} from '@features/collaboration/hooks/useCollaboration';
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 type RouteProp = RouteProp<RootStackParamList, 'ListDetail'>;
@@ -16,6 +18,8 @@ const ListDetailScreen = () => {
   const route = useRoute<RouteProp>();
   const dispatch = useAppDispatch();
   const {listId} = route.params;
+  const [showShareModal, setShowShareModal] = useState(false);
+  const {currentUser} = useCollaboration();
 
   const list = useAppSelector(state => state.lists.lists.find(l => l.id === listId));
   const items = useAppSelector(state => 
@@ -26,14 +30,23 @@ const ListDetailScreen = () => {
     navigation.setOptions({
       title: list?.name || 'Shopping List',
       headerRight: () => (
-        <TouchableOpacity
-          style={styles.headerButton}
-          onPress={() => navigation.navigate('AddItem', {listId})}>
-          <Icon name="add" size={24} color="#007AFF" />
-        </TouchableOpacity>
+        <View style={styles.headerButtons}>
+          {currentUser && (
+            <TouchableOpacity
+              style={styles.headerButton}
+              onPress={() => setShowShareModal(true)}>
+              <Icon name="share" size={24} color="#007AFF" />
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            style={styles.headerButton}
+            onPress={() => navigation.navigate('AddItem', {listId})}>
+            <Icon name="add" size={24} color="#007AFF" />
+          </TouchableOpacity>
+        </View>
       ),
     });
-  }, [navigation, list?.name, listId]);
+  }, [navigation, list?.name, listId, currentUser]);
 
   const handleToggleItem = (itemId: string) => {
     dispatch(toggleItem(itemId));
@@ -97,6 +110,13 @@ const ListDetailScreen = () => {
           </View>
         }
       />
+      
+      <ShareListModal
+        visible={showShareModal}
+        listId={listId}
+        listName={list?.name || 'Shopping List'}
+        onClose={() => setShowShareModal(false)}
+      />
     </View>
   );
 };
@@ -108,6 +128,10 @@ const styles = StyleSheet.create({
   },
   headerButton: {
     marginRight: 16,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   listContainer: {
     padding: 16,

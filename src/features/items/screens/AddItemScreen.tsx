@@ -1,10 +1,12 @@
 import React, {useState} from 'react';
-import {View, Text, TextInput, TouchableOpacity, StyleSheet, Alert} from 'react-native';
+import {View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Modal} from 'react-native';
 import {useNavigation, useRoute, RouteProp} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {useAppDispatch} from '@hooks/redux';
 import {addItem} from '@store/slices/itemsSlice';
 import {RootStackParamList} from '@navigation/types';
+import {BarcodeScanner} from '@features/barcode/components/BarcodeScanner';
+import {VoiceInputButton} from '@features/voice/components/VoiceInputButton';
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 type RouteProp = RouteProp<RootStackParamList, 'AddItem'>;
@@ -20,6 +22,7 @@ const AddItemScreen = () => {
   const [name, setName] = useState('');
   const [quantity, setQuantity] = useState('1');
   const [category, setCategory] = useState('');
+  const [showScanner, setShowScanner] = useState(false);
 
   const handleSave = () => {
     if (!name.trim()) {
@@ -36,6 +39,22 @@ const AddItemScreen = () => {
       completed: false,
     }));
     navigation.goBack();
+  };
+
+  const handleBarcodeScan = (barcode: string, product: any) => {
+    if (product) {
+      setName(product.name);
+      setCategory(product.category || '');
+    } else {
+      setName(barcode);
+    }
+    setShowScanner(false);
+  };
+
+  const handleVoiceCommand = (command: { action: string; item: string }) => {
+    if (command.action === 'add_item' && command.item) {
+      setName(command.item);
+    }
   };
 
   return (
@@ -75,10 +94,24 @@ const AddItemScreen = () => {
           ))}
         </View>
 
+        <View style={styles.actionButtons}>
+          <TouchableOpacity style={styles.scanButton} onPress={() => setShowScanner(true)}>
+            <Text style={styles.scanButtonText}>📷 Scan</Text>
+          </TouchableOpacity>
+          <VoiceInputButton onVoiceCommand={handleVoiceCommand} />
+        </View>
+
         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
           <Text style={styles.saveButtonText}>Add Item</Text>
         </TouchableOpacity>
       </View>
+
+      <Modal visible={showScanner} animationType="slide">
+        <BarcodeScanner
+          onScan={handleBarcodeScan}
+          onClose={() => setShowScanner(false)}
+        />
+      </Modal>
     </View>
   );
 };
@@ -139,6 +172,24 @@ const styles = StyleSheet.create({
     marginTop: 32,
   },
   saveButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 16,
+  },
+  scanButton: {
+    backgroundColor: '#34C759',
+    borderRadius: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+  },
+  scanButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '600',

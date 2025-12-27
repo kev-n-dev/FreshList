@@ -11,6 +11,7 @@ import EditListScreen from '@features/lists/screens/EditListScreen';
 import AddItemScreen from '@features/items/screens/AddItemScreen';
 import EditItemScreen from '@features/items/screens/EditItemScreen';
 import SettingsScreen from '@features/settings/screens/SettingsScreen';
+import AuthScreen from '@features/collaboration/screens/AuthScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -39,6 +40,7 @@ const AppNavigator = () => (
       <Stack.Screen name="EditList" component={EditListScreen} options={{title: 'Edit List'}} />
       <Stack.Screen name="AddItem" component={AddItemScreen} options={{title: 'Add Item'}} />
       <Stack.Screen name="EditItem" component={EditItemScreen} options={{title: 'Edit Item'}} />
+      <Stack.Screen name="Auth" component={AuthScreen} options={{title: 'Sign In'}} />
     </Stack.Navigator>
   </NavigationContainer>
 );
